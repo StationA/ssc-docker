@@ -2,19 +2,17 @@
 
 set -e
 
-INSTALL_PREFIX="/usr/local"
-SSC_VER="de6cd48031d45f18e35a6df677b2e6c97d029103"
-SSC_DIR="$PWD/ssc-$SSC_VER"
+INSTALL_PREFIX=${INSTALL_PREFIX:-/usr/local}
+BUILD_DIR=${BUILD_DIR:-/tmp}
+SSC_VER="d559121384ab5dbe9d0ed7bbab8e02aab19156c0"
+SSC_DIR="$BUILD_DIR/ssc-$SSC_VER"
 
-# Download source, verify md5, and unzip contents
+# Download source and unzip contents
 # TODO: Use a proper release when it's available!
+pushd $BUILD_DIR
 wget -O ssc.zip https://github.com/NREL/ssc/archive/$SSC_VER.zip
-echo "60ea7e2820b14496ceef59c3d51506a2  ssc.zip" > checksum && md5sum -c checksum
 unzip ssc.zip
-
-# Apply source patches
-pushd $SSC_DIR
-curl https://github.com/bje-/ssc/commit/c8ed260fb44e325bed553b0bb139da39183bfcef.patch | git apply
+rm ssc.zip
 popd
 
 # Build ssc core libs
@@ -28,9 +26,9 @@ make -f Makefile-ssc -j9
 popd
 
 # Copy built libs to system directories
-mkdir -p /usr/local/lib /usr/local/include
+mkdir -p $INSTALL_PREFIX/lib $INSTALL_PREFIX/include
 
 cp $SSC_DIR/build_linux/ssc.so $INSTALL_PREFIX/lib/libssc.so
 cp $SSC_DIR/ssc/sscapi.h $INSTALL_PREFIX/include/sscapi.h
 
-rm -rf ssc.zip $SSC_DIR
+rm -rf $SSC_DIR
