@@ -4,33 +4,30 @@ set -e
 
 INSTALL_PREFIX=${INSTALL_PREFIX:-/usr}
 BUILD_DIR=${BUILD_DIR:-/tmp}
-SSC_VER="d559121384ab5dbe9d0ed7bbab8e02aab19156c0"
+SSC_VER="1.0.4"
 SSC_DIR="$BUILD_DIR/ssc-$SSC_VER"
 
+UNAME_OUT="$(uname -s)"
+case "${UNAME_OUT}" in
+    Linux*)     PLATFORM=linux64; PLATFORM_LIB=ssc.so;;
+    Darwin*)    PLATFORM=osx64; PLATFORM_LIB=ssc.dylib;;
+    *)          echo "Unknown platform: ${UNAME_OUT}" && exit 1
+esac
+
 # Download source and unzip contents
-# TODO: Use a proper release when it's available!
 OLDPWD=`pwd`
 cd $BUILD_DIR
-wget -O ssc.zip https://github.com/NREL/ssc/archive/$SSC_VER.zip
+wget -O ssc.zip https://github.com/NREL/ssc/archive/v$SSC_VER.zip
 unzip ssc.zip
 rm ssc.zip
 cd $OLDPWD
 
-# Build ssc core libs
-OLDPWD=`pwd`
-cd $SSC_DIR/build_linux
-make -f Makefile-shared -j9
-make -f Makefile-nlopt -j9
-make -f Makefile-lpsolve -j9
-make -f Makefile-solarpilot -j9
-make -f Makefile-tcs -j9
-make -f Makefile-ssc -j9
-cd $OLDPWD
-
 # Copy built libs to system directories
+OLDPWD=`pwd`
+cd $SSC_DIR/sdk-release
 mkdir -p $INSTALL_PREFIX/lib $INSTALL_PREFIX/include
-
-cp $SSC_DIR/build_linux/ssc.so $INSTALL_PREFIX/lib/libssc.so
-cp $SSC_DIR/ssc/sscapi.h $INSTALL_PREFIX/include/sscapi.h
+cp sscapi.h $INSTALL_PREFIX/include/sscapi.h
+cp $PLATFORM/$PLATFORM_LIB $INSTALL_PREFIX/lib/libssc.so
+cd $OLDPWD
 
 rm -rf $SSC_DIR
