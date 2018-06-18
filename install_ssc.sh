@@ -9,8 +9,8 @@ SSC_DIR="$BUILD_DIR/ssc-$SSC_VER"
 
 UNAME_OUT="$(uname -s)"
 case "${UNAME_OUT}" in
-    Linux*)     PLATFORM=linux64; PLATFORM_LIB=ssc.so;;
-    Darwin*)    PLATFORM=osx64; PLATFORM_LIB=ssc.dylib;;
+    Linux*)     PLATFORM=linux; PLATFORM_LIB=ssc.so; PLATFORM_LIB_DEST=libssc.so;;
+    Darwin*)    PLATFORM=osx; PLATFORM_LIB=ssc.dylib; PLATFORM_LIB_DEST=ssc.dylib;;
     *)          echo "Unknown platform: ${UNAME_OUT}" && exit 1
 esac
 
@@ -24,10 +24,16 @@ cd $OLDPWD
 
 # Copy built libs to system directories
 OLDPWD=`pwd`
-cd $SSC_DIR/sdk-release
+cd $SSC_DIR/build_$PLATFORM
+make -f Makefile-shared -j4
+make -f Makefile-nlopt -j4
+make -f Makefile-lpsolve -j4
+make -f Makefile-solarpilot -j4
+make -f Makefile-tcs -j4
+make -f Makefile-ssc -j4
 mkdir -p $INSTALL_PREFIX/lib $INSTALL_PREFIX/include
-cp sscapi.h $INSTALL_PREFIX/include/sscapi.h
-cp $PLATFORM/$PLATFORM_LIB $INSTALL_PREFIX/lib/libssc.so
+cp $SSC_DIR/ssc/sscapi.h $INSTALL_PREFIX/include/sscapi.h
+cp $PLATFORM_LIB $INSTALL_PREFIX/lib/$PLATFORM_LIB_DEST
 cd $OLDPWD
 
 rm -rf $SSC_DIR
