@@ -9,6 +9,7 @@ RUN apk add --no-cache \
     curl \
     wget \
     zip \
+    build-base \
     bash
 
 WORKDIR /tmp
