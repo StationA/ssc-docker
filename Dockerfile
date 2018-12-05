@@ -1,4 +1,4 @@
-FROM alpine:3.7 as build
+FROM python:alpine as build
 
 # Update and install deps
 
@@ -18,7 +18,7 @@ ADD install_ssc.sh install_ssc.sh
 
 RUN ./install_ssc.sh
 
-FROM alpine:3.7
+FROM python:alpine
 
 COPY --from=build /usr/lib/libssc.so /usr/local/lib/libssc.so
 COPY --from=build /usr/include/sscapi.h /usr/local/include/sscapi.h
