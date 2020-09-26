@@ -3,9 +3,10 @@
 set -e
 
 INSTALL_PREFIX=${INSTALL_PREFIX:-/usr}
-BUILD_DIR=${BUILD_DIR:-/tmp}
-SSC_VER="1.0.4"
-SSC_DIR="$BUILD_DIR/ssc-$SSC_VER"
+BUILD_ROOT_DIR=${BUILD_ROOT_DIR:-/tmp}
+SSC_VER="2020.2.29_Release"
+SSC_DIR="$BUILD_ROOT_DIR/ssc-$SSC_VER"
+CMAKE_DIR="$SSC_DIR/build"
 
 UNAME_OUT="$(uname -s)"
 case "${UNAME_OUT}" in
@@ -16,24 +17,27 @@ esac
 
 # Download source and unzip contents
 OLDPWD=`pwd`
-cd $BUILD_DIR
-wget -O ssc.zip https://github.com/NREL/ssc/archive/v$SSC_VER.zip
+cd $BUILD_ROOT_DIR
+wget -O ssc.zip https://github.com/NREL/ssc/archive/$SSC_VER.zip
 unzip ssc.zip
 rm ssc.zip
 cd $OLDPWD
 
 # Copy built libs to system directories
 OLDPWD=`pwd`
-cd $SSC_DIR/build_$PLATFORM
-make -f Makefile-shared -j4
-make -f Makefile-nlopt -j4
-make -f Makefile-lpsolve -j4
-make -f Makefile-solarpilot -j4
-make -f Makefile-tcs -j4
-make -f Makefile-ssc -j4
+cd $SSC_DIR
+
+# Create a build directory for CMake
+mkdir -p $CMAKE_DIR
+cd $CMAKE_DIR
+
+# Run the build
+cmake -Dskip_tools=ON -Dskip_tests=ON -DCMAKE_BUILD_TYPE=Release ..
+make -j4
+
 mkdir -p $INSTALL_PREFIX/lib $INSTALL_PREFIX/include
 cp $SSC_DIR/ssc/sscapi.h $INSTALL_PREFIX/include/sscapi.h
-cp $PLATFORM_LIB $INSTALL_PREFIX/lib/$PLATFORM_LIB_DEST
+cp $CMAKE_DIR/ssc/$PLATFORM_LIB $INSTALL_PREFIX/lib/$PLATFORM_LIB_DEST
 cd $OLDPWD
 
 rm -rf $SSC_DIR
