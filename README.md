@@ -1,17 +1,20 @@
 # ssc-docker
 
-Docker image with prebuilt SAM Simulation Core (SSC) libraries
+Docker images with prebuilt SAM Simulation Core (SSC) libraries, supporting:
+
+- Alpine
+- Ubuntu
 
 ## Building
 
 ```
-docker build -t stationa/ssc:latest .
+docker build -t stationa/ssc:<alpine|ubuntu> -f Dockerfile.<alpine|ubuntu> .
 ```
 
 ## Running
 
 ```
-docker run -it stationa/ssc:latest
+docker run -it stationa/ssc:<alpine|ubuntu>
 ```
 
 ## Contributing

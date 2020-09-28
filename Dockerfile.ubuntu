@@ -1,0 +1,31 @@
+FROM ubuntu as build
+
+# Update and install deps
+
+RUN apt-get update -y
+
+# https://serverfault.com/questions/949991/how-to-install-tzdata-on-a-ubuntu-docker-image
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get install -y \
+    ca-certificates \
+    wget \
+    zip \
+    build-essential \
+    bash \
+    cmake
+
+WORKDIR /tmp
+
+ADD bin bin
+ADD patches/ubuntu patches
+
+RUN ./bin/download_ssc.sh
+RUN cp -R patches/* .
+RUN ./bin/build_ssc.sh
+RUN ./bin/install_ssc.sh
+
+FROM ubuntu
+
+COPY --from=build /usr/lib/libssc.so /usr/local/lib/libssc.so
+COPY --from=build /usr/include/sscapi.h /usr/local/include/sscapi.h
