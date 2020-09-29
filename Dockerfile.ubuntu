@@ -18,10 +18,8 @@ RUN apt-get install -y \
 WORKDIR /tmp
 
 ADD bin bin
-ADD patches/ubuntu patches
 
 RUN ./bin/download_ssc.sh
-RUN cp -R patches/* .
 RUN ./bin/build_ssc.sh
 RUN ./bin/install_ssc.sh
 
